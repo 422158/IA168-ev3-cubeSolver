@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="ev3">
+    <CLASSES>
+      <root url="file://C:/Program Files/leJOS EV3/lib/ev3" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://C:/Program Files/leJOS EV3/lib/ev3" />
+    </SOURCES>
+    <jarDirectory url="file://C:/Program Files/leJOS EV3/lib/ev3" recursive="false" />
+    <jarDirectory url="file://C:/Program Files/leJOS EV3/lib/ev3" recursive="false" type="SOURCES" />
+  </library>
+</component>
