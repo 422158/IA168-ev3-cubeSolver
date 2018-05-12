@@ -25,7 +25,7 @@ public class ColorSensor extends EV3ColorSensor {
         int red = Math.round(sample[0] / colorRedThreshold * 255);
         int green = Math.round(sample[1] / colorGreenThreshold * 255);
         int blue = Math.round(sample[2] / colorBlueThreshold * 255);
-        System.out.println("R: " + red + "G: " + green + "B: " + blue);
+
         red = red > 255 ? 255 : red;
         green = green > 255 ? 255 : green;
         blue = blue > 255 ? 255 : blue;

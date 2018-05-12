@@ -26,3 +26,6 @@ hs_err_pid*
 
 /.gitignore
 /.idea/LejosPreferencesConfig.xml
+.idea/vcs.xml
+.idea/workspace.xml
+ev3-cubeSolver.iml
