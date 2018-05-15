@@ -12,44 +12,62 @@ public class Cube {
 
     private Color side[][];
 
-    private int bottomPosition = DOWN;
-    private int rotation = 0; // 0,1,2,3
+    private int currentRotation [];
 
     Cube() {
         init();
     }
 
-    int getRotation() {
-        return rotation;
+    public int getCurrentPositionOfSide(int side) {
+        for (int i = 0; i < 6; ++i)
+            if (currentRotation[i] == side)
+                return i;
+        return -1;
     }
 
-    int getNextClockwiseRotation() {
-        int rotate = rotation + 1;
-        if (rotate == 4) rotate = 0;
 
-        return rotate;
+
+    public void changeRotationClockwise()
+    {
+        int tmp = currentRotation[2];
+        currentRotation[2] = currentRotation[1];
+        currentRotation[1] = currentRotation[5];
+        currentRotation[5] = currentRotation[4];
+        currentRotation[4] = tmp;
     }
 
-    int getNextCounterClockwiseRotation() {
-        int rotate = rotation - 1;
-        if (rotate == -1) rotate = 3;
-
-        return rotate;
+    public void changeRotationCounterClockwise()
+    {
+        int tmp = currentRotation[2];
+        currentRotation[2] = currentRotation[4];
+        currentRotation[4] = currentRotation[5];
+        currentRotation[5] = currentRotation[1];
+        currentRotation[1] = tmp;
     }
 
-    void rotateClockwise() {
-        rotation = getNextClockwiseRotation();
+    public void changeRotationByFlip()
+    {
+        int tmp = currentRotation[0];
+        currentRotation[0] = currentRotation[2];
+        currentRotation[2] = currentRotation[3];
+        currentRotation[3] = currentRotation[5];
+        currentRotation[5] = tmp;
     }
 
-    void rotateCounterClockwise() {
-        rotation = getNextCounterClockwiseRotation();
-    }
 
     private void init() {
         side = new Color[6][9];
         for (int i = 0; i < 6; i++)
             for (int j = 0; j < 9; j++)
                 side[i][j] = Color.ANY;
+
+        currentRotation = new int [6];
+        currentRotation[0] = UP;
+        currentRotation[1] = RIGHT;
+        currentRotation[2] = FACE;
+        currentRotation[3] = DOWN;
+        currentRotation[4] = LEFT;
+        currentRotation[5] = BACK;
     }
 
     public String toScrambleString() {
@@ -61,14 +79,6 @@ public class Cube {
         }
 
         return builder.toString();
-    }
-
-    public int getBottomPosition() {
-        return bottomPosition;
-    }
-
-    public void setBottomPosition(int bottomPosition) {
-        this.bottomPosition = bottomPosition;
     }
 
     public void setField(int side, int position, Color color) {
@@ -123,89 +133,4 @@ public class Cube {
         }
     }
 
-    public void setNextPositionByFlip() {
-        setBottomPosition(getNextPositionByFlip());
-    }
-
-    public int getNextPositionByFlip() {
-        return getNextPositionByFlip(getBottomPosition(), rotation);
-    }
-
-    public static int getNextPositionByFlip(int side, int rotation) {
-        switch (side) {
-            case UP:
-                switch (rotation) {
-                    case 0:
-                        return FACE;
-                    case 1:
-                        return LEFT;
-                    case 2:
-                        return BACK;
-                    case 3:
-                        return RIGHT;
-                }
-                break;
-            case FACE:
-                switch (rotation) {
-                    case 0:
-                        return DOWN;
-                    case 1:
-                        return LEFT;
-                    case 2:
-                        return UP;
-                    case 3:
-                        return RIGHT;
-                }
-                break;
-            case DOWN:
-                switch (rotation) {
-                    case 0:
-                        return BACK;
-                    case 1:
-                        return LEFT;
-                    case 2:
-                        return FACE;
-                    case 3:
-                        return RIGHT;
-                }
-                break;
-            case RIGHT:
-                switch (rotation) {
-                    case 0:
-                        return BACK;
-                    case 1:
-                        return DOWN;
-                    case 2:
-                        return FACE;
-                    case 3:
-                        return UP;
-                }
-            case LEFT:
-                switch (rotation) {
-                    case 0:
-                        return BACK;
-                    case 1:
-                        return UP;
-                    case 2:
-                        return FACE;
-                    case 3:
-                        return DOWN;
-                }
-                break;
-            case BACK:
-                switch (rotation) {
-                    case 0:
-                        return UP;
-                    case 1:
-                        return LEFT;
-                    case 2:
-                        return DOWN;
-                    case 3:
-                        return RIGHT;
-                }
-                break;
-        }
-
-        return UP;
-    }
 }

@@ -51,8 +51,7 @@ public class CubeSolver {
         grab();
         arm.rotateTo(GRAB_ANGLE + GRAB_ANGLE_BACKWARD);
         release();
-
-//        cube.setPositionByFlip();
+        cube.changeRotationByFlip();
     }
 
     void rotateClockwisePlusAngle(int angle) {
@@ -61,6 +60,7 @@ public class CubeSolver {
 
     void rotateClockwise() {
         rotateClockwisePlusAngle(0);
+        cube.changeRotationClockwise();
     }
 
     void rotateCounterClockwisePlusAngle(int angle) {
@@ -69,6 +69,7 @@ public class CubeSolver {
 
     void rotateCounterClockwise() {
         rotateCounterClockwisePlusAngle(0);
+        cube.changeRotationCounterClockwise();
     }
 
     void grabAndRotateCubeCounterClockwise() {
@@ -80,9 +81,11 @@ public class CubeSolver {
         plate.rotate(-ROTATE_STEP);
     }
 
-    void grabAndRotateCubeClockwise() {
+    void grabAndRotateCubeClockwise(boolean twice) {
         grab();
         Delay.msDelay(500);
+        if (twice)
+            rotateCounterClockwisePlusAngle(0);
         rotateCounterClockwisePlusAngle(ROTATE_STEP);
         Delay.msDelay(500);
         release();
@@ -195,134 +198,150 @@ public class CubeSolver {
         return optimum;
     }
 
-    void setCubePosition(char symbol) {
-
-        int goalSide = Cube.getSideFromChar(symbol);
-
-        if (goalSide == cube.getBottomPosition()) {
-            return;
+    void setSideToBottom(int side) {
+        switch (cube.getCurrentPositionOfSide(side))
+        {
+            case 0:
+                flipCube();
+                flipCube();
+                return;
+            case 1:
+                rotateCounterClockwise();
+                flipCube();
+                return;
+            case 2:
+                flipCube();
+                flipCube();
+                flipCube();
+                return;
+            case 3:
+                return;
+            case 4:
+                rotateClockwise();
+                flipCube();
+                return;
+            case 5:
+                flipCube();
+            default:
+                return;
         }
 
-        int nextPositionByFlip = cube.getNextPositionByFlip();
-        if (goalSide == nextPositionByFlip) {
-            flipCube();
-            cube.setBottomPosition(nextPositionByFlip);
-            return ;
-        }
-
-        int nextNextPositionByFlip = Cube.getNextPositionByFlip(nextPositionByFlip, cube.getRotation());
-
-        if (goalSide == nextNextPositionByFlip) {
-            flipCube();
-            flipCube();
-            cube.setBottomPosition(nextNextPositionByFlip);
-            return ;
-        }
-
-        int nextNextNextPositionByFlip = Cube.getNextPositionByFlip(nextNextPositionByFlip, cube.getRotation());
-        if (goalSide == nextNextNextPositionByFlip) {
-            flipCube();
-            flipCube();
-            flipCube();
-            cube.setBottomPosition(nextNextNextPositionByFlip);
-            return ;
-        }
-
-        int clockwiseRotate = cube.getNextClockwiseRotation();
-        if (goalSide == Cube.getNextPositionByFlip(cube.getBottomPosition(), clockwiseRotate)) {
-            rotateClockwise();
-            flipCube();
-
-            cube.setBottomPosition(Cube.getNextPositionByFlip(cube.getBottomPosition(), clockwiseRotate));
-            cube.rotateClockwise();
-            return ;
-        }
-
-        int counterClockwiseRotate = cube.getNextCounterClockwiseRotation();
-        if (goalSide == Cube.getNextPositionByFlip(cube.getBottomPosition(), counterClockwiseRotate)) {
-            rotateCounterClockwise();
-            flipCube();
-
-            cube.setBottomPosition(Cube.getNextPositionByFlip(cube.getBottomPosition(), counterClockwiseRotate));
-            cube.rotateCounterClockwise();
-            return ;
+    }
+    void solveCubeUsingSolution(String solution)
+    {
+        String steps [] = solution.split(" ");
+        for (int i = 0; i < steps.length; i++)
+        {
+            if (steps[i].length() == 0) continue;
+            switch (steps[i].charAt(0))
+            {
+                case 'R':
+                    setSideToBottom(Cube.RIGHT);
+                    break;
+                case 'L':
+                    setSideToBottom(Cube.LEFT);
+                    break;
+                case 'U':
+                    setSideToBottom(Cube.UP);
+                    break;
+                case 'D':
+                    setSideToBottom(Cube.DOWN);
+                    break;
+                case 'F':
+                    setSideToBottom(Cube.FACE);
+                    break;
+                case 'B':
+                    setSideToBottom(Cube.BACK);
+                    break;
+            }
+            System.out.println(steps[i] + " " + steps[i].length());
+            Button.waitForAnyPress();
+            if (steps[i].length() == 2) {
+                if (steps[i].charAt(1) == '\'')
+                    grabAndRotateCubeCounterClockwise();
+                else if (steps[i].charAt(1) == '2')
+                    grabAndRotateCubeClockwise(true);
+            }
+            else if (steps[i].length() == 1) {
+                grabAndRotateCubeClockwise(false);
+            }
         }
     }
-
     public void run() {
 
-        cube.setField(Cube.UP, 0, Cube.Color.WHITE);
-        cube.setField(Cube.UP, 1, Cube.Color.WHITE);
+        cube.setField(Cube.UP, 0, Cube.Color.GREEN);
+        cube.setField(Cube.UP, 1, Cube.Color.RED);
         cube.setField(Cube.UP, 2, Cube.Color.WHITE);
-        cube.setField(Cube.UP, 3, Cube.Color.WHITE);
+        cube.setField(Cube.UP, 3, Cube.Color.ORANGE);
         cube.setField(Cube.UP, 4, Cube.Color.WHITE);
-        cube.setField(Cube.UP, 5, Cube.Color.WHITE);
-        cube.setField(Cube.UP, 6, Cube.Color.WHITE);
-        cube.setField(Cube.UP, 7, Cube.Color.WHITE);
-        cube.setField(Cube.UP, 8, Cube.Color.WHITE);
+        cube.setField(Cube.UP, 5, Cube.Color.RED);
+        cube.setField(Cube.UP, 6, Cube.Color.BLUE);
+        cube.setField(Cube.UP, 7, Cube.Color.YELLOW);
+        cube.setField(Cube.UP, 8, Cube.Color.BLUE);
 
-        cube.setField(Cube.FACE, 0, Cube.Color.GREEN);
-        cube.setField(Cube.FACE, 1, Cube.Color.GREEN);
-        cube.setField(Cube.FACE, 2, Cube.Color.GREEN);
+        cube.setField(Cube.FACE, 0, Cube.Color.RED);
+        cube.setField(Cube.FACE, 1, Cube.Color.BLUE);
+        cube.setField(Cube.FACE, 2, Cube.Color.RED);
         cube.setField(Cube.FACE, 3, Cube.Color.GREEN);
         cube.setField(Cube.FACE, 4, Cube.Color.GREEN);
-        cube.setField(Cube.FACE, 5, Cube.Color.GREEN);
-        cube.setField(Cube.FACE, 6, Cube.Color.GREEN);
-        cube.setField(Cube.FACE, 7, Cube.Color.GREEN);
-        cube.setField(Cube.FACE, 8, Cube.Color.GREEN);
+        cube.setField(Cube.FACE, 5, Cube.Color.RED);
+        cube.setField(Cube.FACE, 6, Cube.Color.BLUE);
+        cube.setField(Cube.FACE, 7, Cube.Color.BLUE);
+        cube.setField(Cube.FACE, 8, Cube.Color.WHITE);
 
-        cube.setField(Cube.DOWN, 0, Cube.Color.YELLOW);
-        cube.setField(Cube.DOWN, 1, Cube.Color.YELLOW);
-        cube.setField(Cube.DOWN, 2, Cube.Color.YELLOW);
-        cube.setField(Cube.DOWN, 3, Cube.Color.YELLOW);
+        cube.setField(Cube.DOWN, 0, Cube.Color.WHITE);
+        cube.setField(Cube.DOWN, 1, Cube.Color.RED);
+        cube.setField(Cube.DOWN, 2, Cube.Color.GREEN);
+        cube.setField(Cube.DOWN, 3, Cube.Color.WHITE);
         cube.setField(Cube.DOWN, 4, Cube.Color.YELLOW);
         cube.setField(Cube.DOWN, 5, Cube.Color.YELLOW);
         cube.setField(Cube.DOWN, 6, Cube.Color.YELLOW);
         cube.setField(Cube.DOWN, 7, Cube.Color.YELLOW);
         cube.setField(Cube.DOWN, 8, Cube.Color.YELLOW);
 
-        cube.setField(Cube.RIGHT, 0, Cube.Color.RED);
-        cube.setField(Cube.RIGHT, 1, Cube.Color.RED);
-        cube.setField(Cube.RIGHT, 2, Cube.Color.RED);
-        cube.setField(Cube.RIGHT, 3, Cube.Color.RED);
+        cube.setField(Cube.RIGHT, 0, Cube.Color.YELLOW);
+        cube.setField(Cube.RIGHT, 1, Cube.Color.YELLOW);
+        cube.setField(Cube.RIGHT, 2, Cube.Color.ORANGE);
+        cube.setField(Cube.RIGHT, 3, Cube.Color.WHITE);
         cube.setField(Cube.RIGHT, 4, Cube.Color.RED);
-        cube.setField(Cube.RIGHT, 5, Cube.Color.RED);
+        cube.setField(Cube.RIGHT, 5, Cube.Color.ORANGE);
         cube.setField(Cube.RIGHT, 6, Cube.Color.RED);
         cube.setField(Cube.RIGHT, 7, Cube.Color.ORANGE);
         cube.setField(Cube.RIGHT, 8, Cube.Color.BLUE);
 
-        cube.setField(Cube.LEFT, 0, Cube.Color.ORANGE);
-        cube.setField(Cube.LEFT, 1, Cube.Color.ORANGE);
-        cube.setField(Cube.LEFT, 2, Cube.Color.ORANGE);
-        cube.setField(Cube.LEFT, 3, Cube.Color.ORANGE);
+        cube.setField(Cube.LEFT, 0, Cube.Color.RED);
+        cube.setField(Cube.LEFT, 1, Cube.Color.WHITE);
+        cube.setField(Cube.LEFT, 2, Cube.Color.WHITE);
+        cube.setField(Cube.LEFT, 3, Cube.Color.WHITE);
         cube.setField(Cube.LEFT, 4, Cube.Color.ORANGE);
         cube.setField(Cube.LEFT, 5, Cube.Color.ORANGE);
-        cube.setField(Cube.LEFT, 6, Cube.Color.BLUE);
-        cube.setField(Cube.LEFT, 7, Cube.Color.RED);
+        cube.setField(Cube.LEFT, 6, Cube.Color.GREEN);
+        cube.setField(Cube.LEFT, 7, Cube.Color.BLUE);
         cube.setField(Cube.LEFT, 8, Cube.Color.ORANGE);
 
-        cube.setField(Cube.BACK, 0, Cube.Color.BLUE);
-        cube.setField(Cube.BACK, 1, Cube.Color.BLUE);
-        cube.setField(Cube.BACK, 2, Cube.Color.BLUE);
+        cube.setField(Cube.BACK, 0, Cube.Color.GREEN);
+        cube.setField(Cube.BACK, 1, Cube.Color.GREEN);
+        cube.setField(Cube.BACK, 2, Cube.Color.YELLOW);
         cube.setField(Cube.BACK, 3, Cube.Color.BLUE);
         cube.setField(Cube.BACK, 4, Cube.Color.BLUE);
-        cube.setField(Cube.BACK, 5, Cube.Color.BLUE);
+        cube.setField(Cube.BACK, 5, Cube.Color.GREEN);
         cube.setField(Cube.BACK, 6, Cube.Color.ORANGE);
-        cube.setField(Cube.BACK, 7, Cube.Color.BLUE);
-        cube.setField(Cube.BACK, 8, Cube.Color.RED);
+        cube.setField(Cube.BACK, 7, Cube.Color.GREEN);
+        cube.setField(Cube.BACK, 8, Cube.Color.ORANGE);
 
         String solution = findSolution();
 
         if (solution == null) {
             System.out.println("Solution does not exist.");
+            Button.waitForAnyPress();
             return;
         }
 
         System.out.println(solution);
 
-        setCubePosition('R');
-        setCubePosition('F');
-        setCubePosition('L');
+
+        solveCubeUsingSolution(solution);
+        Button.waitForAnyPress();
 
 
         clear();
