@@ -1,83 +1,57 @@
 package com.mindstorm.cube_solver;
 
 import lejos.hardware.port.Port;
-import lejos.hardware.port.UARTPort;
 import lejos.hardware.sensor.EV3ColorSensor;
-import lejos.robotics.Color;
+import lejos.robotics.SampleProvider;
+import lejos.robotics.filter.MedianFilter;
+import lejos.utility.Delay;
 
-public class ColorSensor extends EV3ColorSensor {
-    public ColorSensor(UARTPort port) {
-        super(port);
+public class ColorSensor  {
+    private EV3ColorSensor colorSensor;
+    private SampleProvider medianProvider;
+
+    public ColorSensor(Port port)
+    {
+        colorSensor = new EV3ColorSensor(port);
+        medianProvider = new MedianFilter(colorSensor.getRGBMode(), 10);
+    }
+    Cube.Color getRGBColor() {
+        float [] result = new float[medianProvider.sampleSize()];
+        for (int i = 0; i < 10; ++i)
+            medianProvider.fetchSample(result, 0);
+
+        return determineColor(result);
     }
 
-    public ColorSensor(Port port) {
-        super(port);
+    public void close(){
+        colorSensor.close();
     }
 
-    Color getRGBColor() {
-        float sample[] = new float[3];
-        fetchSample(sample, 0);
+    public static Cube.Color determineColor(float [] colorArray) {
+        float red = colorArray[0];
+        float green = colorArray[1];
+        float blue = colorArray[2];
+        System.out.println("R: " + red + " G: " + green + " B: " + blue);
 
-        float colorRedThreshold = 0.16f;
-        float colorGreenThreshold = 0.22f;
-        float colorBlueThreshold = 0.16f;
+        if (red > 0.09 && green < 0.06)
+            return Cube.Color.RED;
+        //0.12 0.064 0.024
+        if (red > 0.09 && green > 0.06 && green < 0.1)
+            return Cube.Color.ORANGE;
 
-        int red = Math.round(sample[0] / colorRedThreshold * 255);
-        int green = Math.round(sample[1] / colorGreenThreshold * 255);
-        int blue = Math.round(sample[2] / colorBlueThreshold * 255);
+        if (red > 0.1 && green > 0.1 && blue > 0.1)
+            return Cube.Color.WHITE;
 
-        red = red > 255 ? 255 : red;
-        green = green > 255 ? 255 : green;
-        blue = blue > 255 ? 255 : blue;
+        if (red < 0.1 && green < 0.15 && blue > 0.1)
+            return Cube.Color.BLUE;
 
-        return new Color(red, green, blue);
-    }
+        if (red < 0.1 && green > 0.15 && blue < 0.1)
+            return Cube.Color.GREEN;
 
-    public static String colorName(Color color) {
+        if (red > 0.1 && green > 0.2 && blue < 0.1)
+            return Cube.Color.YELLOW;
 
-        if (color.getRed() > 179 &&
-                color.getGreen() > 70 && color.getGreen() < 130 &&
-                color.getBlue() < 70) {
-            return "orange";
-        }
+        return Cube.Color.ANY;
 
-        if (color.getRed() > 179 &&
-                color.getGreen() < 71 &&
-                color.getBlue() < 71) {
-            return "red";
-        }
-
-        if (color.getRed() < 100 &&
-                color.getGreen() > 190 &&
-                color.getBlue() < 100) {
-            return "green";
-        }
-
-        if (color.getRed() > 210 &&
-                color.getGreen() > 210 &&
-                color.getBlue() < 90) {
-            return "yellow";
-        }
-
-        if (color.getRed() > 210 &&
-                color.getGreen() > 210 &&
-                color.getBlue() > 210) {
-            return "white";
-        }
-
-        if (color.getRed() < 100 &&
-                color.getGreen() < 150 &&
-                color.getBlue() > 190) {
-            return "blue";
-        }
-
-        if (color.getRed() > 140 && color.getRed() < 177 &&
-                color.getGreen() > 210 &&
-                color.getBlue() > 210) {
-            return "white custom";
-        }
-
-
-        return "any";
     }
 }

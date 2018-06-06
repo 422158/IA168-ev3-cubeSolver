@@ -25,6 +25,11 @@ public class Cube {
         return -1;
     }
 
+    public int getCurrentRotationsTop()
+    {
+        return currentRotation[0];
+    }
+
 
 
     public void changeRotationClockwise()
